@@ -225,7 +225,8 @@
   const MINUTES = config.minutesPerQuiz || 0;
   const POLL_MS = 4000;
   const AWAKE_MS = 10 * 60000;
-  const SILENCE = (String(config.keepAwakeTrack || "").match(/track[/:]([A-Za-z0-9]{22})/) || [])[1];
+  const silenceMatch = String(config.keepAwakeTrack || "").match(/(track|episode)[/:]([A-Za-z0-9]{22})/);
+  const SILENCE = silenceMatch && silenceMatch[2];
   const playlistId = (String(config.playlist || "").match(/playlist[/:]([A-Za-z0-9]{22})/) || [])[1];
 
   let round = loadRound(); // { played: [track ids], deadline: ms or null } while music is allowed
@@ -461,7 +462,7 @@
   function restQuietly() {
     if (!SILENCE) { remote.pause().catch(() => {}); return; }
     awakeUntil = Date.now() + AWAKE_MS;
-    remote.play({ uris: [`spotify:track:${SILENCE}`] }).catch(() => remote.pause().catch(() => {}));
+    remote.play({ uris: [`spotify:${silenceMatch[1]}:${SILENCE}`], position_ms: 0 }).catch(() => remote.pause().catch(() => {}));
   }
 
   $("#now-toggle").addEventListener("click", () => {

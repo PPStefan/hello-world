@@ -211,6 +211,6 @@ window.SpotifyRemote = (() => {
     play,
     resume: () => play(undefined),
     pause: () => api("PUT", "/me/player/pause"),
-    nowPlaying: () => api("GET", "/me/player"),
+    nowPlaying: () => api("GET", "/me/player?additional_types=track,episode"),
   };
 })();
