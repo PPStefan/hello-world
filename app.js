@@ -192,6 +192,10 @@
   }
 
   function reward() {
+    if (remote && remote.configured) {
+      startRound();
+      return;
+    }
     const box = $("#songs");
     box.innerHTML = "";
     const tracks = shuffle(config.songs || [])
@@ -211,6 +215,249 @@
     burst(["🎵", "🎶", "⭐", "🎉", "💖"]);
   }
 
+  // ---- Reward with full songs: the page remote-controls her Spotify app ----
+  // A finished quiz opens a "round" of SONGS songs (and optionally MINUTES).
+  // The page checks what Spotify is playing every few seconds, pauses it when
+  // the round is used up, and pauses any music that plays outside a round.
+  const remote = window.SpotifyRemote;
+  const ROUND_KEY = "songquiz.round";
+  const SONGS = config.songsPerQuiz || 2;
+  const MINUTES = config.minutesPerQuiz || 0;
+  const POLL_MS = 4000;
+  const playlistId = (String(config.playlist || "").match(/playlist[/:]([A-Za-z0-9]{22})/) || [])[1];
+
+  let round = loadRound(); // { played: [track ids], deadline: ms or null } while music is allowed
+  let trackList = null;
+  let lastState = null;
+  let pollTimer = null;
+  let endTimer = null;
+  let polling = false;
+  let wakeLock = null;
+
+  function loadRound() {
+    try { return JSON.parse(localStorage.getItem(ROUND_KEY)); } catch { return null; }
+  }
+  function saveRound() {
+    try {
+      if (round) localStorage.setItem(ROUND_KEY, JSON.stringify(round));
+      else localStorage.removeItem(ROUND_KEY);
+    } catch { /* private mode: the round just won't survive a reload */ }
+  }
+
+  // Keep the screen on while music plays, so the page can stop it in time.
+  async function keepAwake() {
+    try { if (navigator.wakeLock && !wakeLock) wakeLock = await navigator.wakeLock.request("screen"); } catch { /* not supported */ }
+    if (wakeLock) wakeLock.addEventListener("release", () => { wakeLock = null; }, { once: true });
+  }
+  function letSleep() {
+    if (wakeLock) wakeLock.release().catch(() => {});
+    wakeLock = null;
+  }
+
+  function note(html) {
+    $("#songs").innerHTML = `<div class="note">${html}</div>`;
+  }
+
+  function startRound() {
+    round = { played: [], deadline: MINUTES ? Date.now() + MINUTES * 60000 : null };
+    saveRound();
+    showRound();
+    sounds.win();
+    burst(["🎵", "🎶", "⭐", "🎉", "💖"]);
+  }
+
+  async function showRound() {
+    show("reward");
+    setStars(2);
+    $("#again-btn").hidden = true;
+    $("#reward-lead").textContent = `Pick a song to play 🎧`;
+    keepAwake();
+    renderCount();
+    if (!remote.connected()) {
+      note('A grown-up needs to connect Spotify first.<br><button class="small-btn" id="connect-now">Connect Spotify</button>');
+      $("#connect-now").addEventListener("click", () => remote.login());
+      return;
+    }
+    if (!trackList) {
+      note("Loading your songs… 🎶");
+      trackList = playlistId ? await remote.playlistTracks(playlistId).catch(() => []) : [];
+    }
+    renderTracks();
+    poll();
+  }
+
+  function renderTracks() {
+    const box = $("#songs");
+    box.innerHTML = "";
+    if (!playlistId) {
+      note("🎶 Ask a grown-up to add your playlist in <b>config.js</b>!");
+      return;
+    }
+    const context = `spotify:playlist:${playlistId}`;
+    if (!trackList.length) {
+      const btn = document.createElement("button");
+      btn.className = "big-btn";
+      btn.textContent = "Play my songs ▶";
+      btn.addEventListener("click", () => playSong({ context_uri: context }));
+      box.appendChild(btn);
+      return;
+    }
+    const list = document.createElement("div");
+    list.className = "songs track-list";
+    list.id = "track-list";
+    trackList.forEach((t) => {
+      const btn = document.createElement("button");
+      btn.className = "track";
+      btn.dataset.id = t.id;
+      const img = (t.album && t.album.images || []).slice(-1)[0];
+      btn.innerHTML = '<img alt=""><span></span>';
+      if (img) btn.querySelector("img").src = img.url;
+      btn.querySelector("span").textContent = t.name;
+      btn.addEventListener("click", () => playSong({ context_uri: context, offset: { uri: t.uri } }));
+      list.appendChild(btn);
+    });
+    box.appendChild(list);
+    markPlaying();
+  }
+
+  function markPlaying() {
+    const list = $("#track-list");
+    if (!list || !round) return;
+    const current = lastState && lastState.item && lastState.item.id;
+    list.querySelectorAll(".track").forEach((b) => b.classList.toggle("playing", b.dataset.id === current));
+    // Last song is playing: hide the others so she can't start a third.
+    list.classList.toggle("locked", round.played.length >= SONGS);
+  }
+
+  function renderCount() {
+    const el = $("#song-count");
+    if (!round) { el.hidden = true; return; }
+    const n = round.played.length;
+    let text = n ? `🎵 Song ${n} of ${SONGS}` : `You can play ${SONGS} songs!`;
+    if (round.deadline) {
+      const min = Math.max(0, Math.ceil((round.deadline - Date.now()) / 60000));
+      text += ` · ⏱ ${min} min`;
+    }
+    el.textContent = text;
+    el.hidden = false;
+    $("#reward-lead").textContent = n >= SONGS ? "Last song! Enjoy 🎧" : "Pick a song to play 🎧";
+  }
+
+  function renderNow(state) {
+    const now = $("#now");
+    const item = state && state.item;
+    if (!item) { now.hidden = true; return; }
+    const img = (item.album && item.album.images || [])[0];
+    $("#now-art").src = img ? img.url : "";
+    $("#now-art").style.visibility = img ? "" : "hidden";
+    $("#now-title").textContent = item.name;
+    $("#now-artist").textContent = (item.artists || []).map((a) => a.name).join(", ");
+    $("#now-toggle").textContent = state.is_playing ? "⏸" : "▶";
+    now.hidden = false;
+  }
+
+  async function playSong(body) {
+    if (!round || round.played.length >= SONGS) return;
+    try {
+      await remote.play(body);
+      setTimeout(poll, 800);
+    } catch (e) {
+      if (e.reason === "NO_DEVICE") {
+        note('Spotify is asleep 😴<br>Open the Spotify app for a moment, then come back and pick your song.<br><a class="small-btn" href="spotify:">Open Spotify</a>');
+        setTimeout(renderTracks, 15000);
+      } else {
+        note(`Oops, the music didn't start (${e.message}). Try again!`);
+        setTimeout(renderTracks, 4000);
+      }
+    }
+  }
+
+  async function poll() {
+    clearTimeout(pollTimer);
+    if (polling || !remote.connected() || document.hidden) return;
+    polling = true;
+    try {
+      lastState = await remote.nowPlaying();
+      check(lastState);
+    } catch { /* network hiccup: try again next time */ }
+    polling = false;
+    pollTimer = setTimeout(poll, POLL_MS);
+  }
+
+  function check(state) {
+    const playing = Boolean(state && state.is_playing && state.item);
+    if (!round) {
+      if (playing) remote.pause().catch(() => {}); // no music without the quiz
+      return;
+    }
+    if (round.deadline && Date.now() >= round.deadline) { endRound(); return; }
+    renderNow(state);
+    if (playing && state.item.id && !round.played.includes(state.item.id)) {
+      if (round.played.length >= SONGS) { endRound(); return; }
+      round.played.push(state.item.id);
+      saveRound();
+    }
+    renderCount();
+    markPlaying();
+
+    // Stop right at the end of the last song (or when time runs out).
+    clearTimeout(endTimer);
+    let msLeft = Infinity;
+    if (playing && round.played.length >= SONGS) msLeft = state.item.duration_ms - state.progress_ms;
+    if (round.deadline) msLeft = Math.min(msLeft, round.deadline - Date.now());
+    if (msLeft < POLL_MS + 2000) endTimer = setTimeout(endRound, Math.max(0, msLeft - 700));
+  }
+
+  function endRound() {
+    if (!round) return;
+    clearTimeout(endTimer);
+    round = null;
+    saveRound();
+    letSleep();
+    remote.pause().catch(() => {});
+    $("#now").hidden = true;
+    $("#song-count").hidden = true;
+    setStars(0);
+    show("timesup");
+    sounds.right();
+  }
+
+  $("#now-toggle").addEventListener("click", () => {
+    const playing = lastState && lastState.is_playing;
+    $("#now-toggle").textContent = playing ? "▶" : "⏸";
+    (playing ? remote.pause() : remote.resume()).catch(() => {}).finally(() => setTimeout(poll, 800));
+  });
+
+  function renderGrownup() {
+    const el = $("#grownup");
+    if (!remote || !remote.configured) return;
+    el.innerHTML = remote.connected()
+      ? 'Spotify connected ✓ <button class="link-btn" id="disconnect">Disconnect</button>'
+      : '<button class="link-btn" id="connect">Grown-ups: connect Spotify</button>';
+    const connect = $("#connect");
+    if (connect) connect.addEventListener("click", () => remote.login());
+    const disconnect = $("#disconnect");
+    if (disconnect) disconnect.addEventListener("click", () => { remote.logout(); renderGrownup(); });
+  }
+
+  async function initRemote() {
+    if (!remote || !remote.configured) return;
+    try {
+      await remote.handleRedirect();
+    } catch (e) {
+      $("#grownup").textContent = e.message;
+      setTimeout(renderGrownup, 5000);
+    }
+    renderGrownup();
+    if (round) showRound();
+    else poll();
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) return;
+      if (round) keepAwake();
+      poll();
+    });
+  }
+
   function start() {
     setStars(0);
     mathQuestion();
@@ -218,8 +465,10 @@
 
   $("#hello").textContent = config.name ? `Hi ${config.name}!` : "Hi!";
   $("#start-btn").addEventListener("click", start);
+  $("#timesup-btn").addEventListener("click", start);
   $("#again-btn").addEventListener("click", () => {
     $("#songs").innerHTML = ""; // stop the music
     start();
   });
+  initRemote();
 })();

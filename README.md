@@ -13,9 +13,28 @@ Edit `config.js`:
   Two are picked at random after each finished quiz.
 - `playlist` – optional; shown instead when `songs` is empty.
 
-Spotify plays full songs when someone is logged in to Spotify in Safari on
-that iPhone (open open.spotify.com once and log in). Otherwise it plays
-30-second previews.
+- `spotifyClientId` – turns on full songs (see below).
+- `songsPerQuiz` / `minutesPerQuiz` – how much music one finished quiz unlocks.
+
+## Full songs (Spotify Premium)
+
+Spotify's built-in web player only plays 30-second previews on iPhone. With a
+Spotify Client ID the app instead remote-controls the Spotify app on the phone:
+she picks a song on the website, it plays in full, and after `songsPerQuiz`
+songs the music pauses and two new questions appear. Music started outside a
+round is paused too, as long as the website is open.
+
+One-time setup:
+
+1. Go to https://developer.spotify.com/dashboard and log in with her Spotify account.
+2. **Create app**. Name and description can be anything. Redirect URI:
+   `https://ppstefan.github.io/hello-world/` (exactly, with the last `/`).
+   Tick **Web API**, accept the terms and save.
+3. Copy the **Client ID** into `spotifyClientId` in `config.js`.
+4. On her iPhone, open the website, tap **Grown-ups: connect Spotify** and agree.
+
+The Spotify app must be installed on the phone; if it has been closed for a
+long time the website asks her to open it for a moment.
 
 ## Put it on the iPhone
 

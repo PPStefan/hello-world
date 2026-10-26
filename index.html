@@ -26,6 +26,7 @@
       <h1 id="hello">Hi!</h1>
       <p class="lead">Answer 2 questions<br>to unlock 2 songs!</p>
       <button class="big-btn" id="start-btn">Let's go! ▶</button>
+      <p class="grownup" id="grownup"></p>
     </section>
 
     <section class="screen" id="math" hidden>
@@ -47,14 +48,28 @@
       <div class="hero bob">🎉</div>
       <h1>You did it!</h1>
       <p class="lead" id="reward-lead">Pick a song to play 🎧</p>
+      <div class="now" id="now" hidden>
+        <img class="now-art" id="now-art" alt="">
+        <div class="now-text"><b id="now-title"></b><span id="now-artist"></span></div>
+        <button class="play-btn" id="now-toggle" aria-label="Play or pause">⏸</button>
+      </div>
+      <p class="song-count" id="song-count" hidden></p>
       <div class="songs" id="songs"></div>
       <button class="small-btn" id="again-btn">New quiz 🔄</button>
+    </section>
+
+    <section class="screen" id="timesup" hidden>
+      <div class="hero bob">⏰</div>
+      <h1>Music break!</h1>
+      <p class="lead">Answer 2 new questions<br>for more songs!</p>
+      <button class="big-btn" id="timesup-btn">Let's go! ▶</button>
     </section>
   </main>
 
   <div class="burst" id="burst" aria-hidden="true"></div>
 
   <script src="config.js"></script>
+  <script src="spotify.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

@@ -13,4 +13,15 @@ window.APP_CONFIG = {
   // Optional: link to her whole playlist (••• → Share → Copy link to playlist).
   // Used only when the songs list above is empty.
   playlist: "https://open.spotify.com/playlist/0MFiZmMSqu2fQRdKAwwFek",
+
+  // Spotify "Client ID" from developer.spotify.com (see README). When set,
+  // full songs play through the Spotify app (Premium needed) and the quiz
+  // comes back after each round. When empty, Spotify's preview player is used.
+  spotifyClientId: "",
+
+  // How much music one finished quiz unlocks: a number of songs and,
+  // optionally, a time limit in minutes (0 = no time limit). Whichever
+  // runs out first sends her back to the quiz.
+  songsPerQuiz: 2,
+  minutesPerQuiz: 0,
 };
