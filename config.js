@@ -17,7 +17,7 @@ window.APP_CONFIG = {
   // Spotify "Client ID" from developer.spotify.com (see README). When set,
   // full songs play through the Spotify app (Premium needed) and the quiz
   // comes back after each round. When empty, Spotify's preview player is used.
-  spotifyClientId: "",
+  spotifyClientId: "2a96bc04c83044dcb97572286a28d0f1",
 
   // How much music one finished quiz unlocks: a number of songs and,
   // optionally, a time limit in minutes (0 = no time limit). Whichever
