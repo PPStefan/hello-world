@@ -1,7 +1,7 @@
 // ✏️ Grown-up settings — edit this file to personalise the app.
 window.APP_CONFIG = {
   // Her name, shown on the start screen. Leave "" for a plain "Hi!".
-  name: "",
+  name: "Stella",
 
   // Songs she can unlock. In the Spotify app: tap ••• next to a song →
   // Share → Copy Song Link, then paste it here between quotes.
@@ -12,5 +12,5 @@ window.APP_CONFIG = {
 
   // Optional: link to her whole playlist (••• → Share → Copy link to playlist).
   // Used only when the songs list above is empty.
-  playlist: "",
+  playlist: "https://open.spotify.com/playlist/0MFiZmMSqu2fQRdKAwwFek",
 };

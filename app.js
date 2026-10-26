@@ -200,6 +200,7 @@
       .slice(0, 2);
     const frames = tracks.length ? tracks : [spotifyEmbed(config.playlist || "", "playlist")].filter(Boolean);
 
+    $("#reward-lead").textContent = tracks.length ? "Pick a song to play 🎧" : "Pick 2 songs to play 🎧";
     if (frames.length) {
       frames.forEach((f) => box.appendChild(f));
     } else {
