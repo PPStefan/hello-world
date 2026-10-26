@@ -418,6 +418,14 @@
       round.played.push(state.item.id);
       saveRound();
     }
+    // The last song has finished (or Spotify stopped) while nothing new started.
+    const item = state && state.item;
+    const lastId = round.played[round.played.length - 1];
+    if (round.played.length >= SONGS && !playing && (!item || item.id !== lastId
+        || state.progress_ms < 1000 || item.duration_ms - state.progress_ms < 5000)) {
+      endRound();
+      return;
+    }
     renderCount();
     markPlaying();
 
