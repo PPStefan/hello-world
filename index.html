@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <title>Song Quiz</title>
+  <meta name="theme-color" content="#ffd84d">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Song Quiz">
+  <link rel="apple-touch-icon" href="icon-180.png">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="progress" aria-label="Progress">
+    <span class="star" id="star-math">⭐</span>
+    <span class="star" id="star-word">⭐</span>
+  </header>
+
+  <main>
+    <section class="screen" id="start">
+      <div class="hero bob">🎵</div>
+      <h1 id="hello">Hi!</h1>
+      <p class="lead">Answer 2 questions<br>to unlock 2 songs!</p>
+      <button class="big-btn" id="start-btn">Let's go! ▶</button>
+    </section>
+
+    <section class="screen" id="math" hidden>
+      <p class="prompt">How much is…</p>
+      <div class="sum" id="sum"></div>
+      <div class="counters" id="counters" aria-hidden="true"></div>
+      <div class="choices" id="math-choices"></div>
+      <p class="hint" id="math-hint">&nbsp;</p>
+    </section>
+
+    <section class="screen" id="word" hidden>
+      <p class="prompt">Which one is…</p>
+      <div class="word" id="word-text"></div>
+      <div class="choices pics" id="word-choices"></div>
+      <p class="hint" id="word-hint">&nbsp;</p>
+    </section>
+
+    <section class="screen" id="reward" hidden>
+      <div class="hero bob">🎉</div>
+      <h1>You did it!</h1>
+      <p class="lead">Pick a song to play 🎧</p>
+      <div class="songs" id="songs"></div>
+      <button class="small-btn" id="again-btn">New quiz 🔄</button>
+    </section>
+  </main>
+
+  <div class="burst" id="burst" aria-hidden="true"></div>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
