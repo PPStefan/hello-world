@@ -134,6 +134,18 @@ h1 { font-size: 48px; margin: 0; }
 .songs .note { font-size: 20px; background: var(--card); border-radius: 20px; padding: 16px; }
 
 .grownup { font-size: 16px; margin: 24px 0 0; opacity: 0.75; }
+.diagnose {
+  font: 13px/1.4 ui-monospace, monospace;
+  text-align: left;
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: var(--card);
+  border-radius: 12px;
+  padding: 10px;
+  margin: 8px 0 0;
+  user-select: text;
+  -webkit-user-select: text;
+}
 .link-btn {
   font: inherit;
   color: var(--accent-dark);

@@ -298,8 +298,10 @@
       const btn = document.createElement("button");
       btn.className = "big-btn";
       btn.textContent = "Play my songs ▶";
+      btn.id = "play-all";
       btn.addEventListener("click", () => playSong({ context_uri: context }));
       box.appendChild(btn);
+      markPlaying();
       return;
     }
     const list = document.createElement("div");
@@ -321,6 +323,8 @@
   }
 
   function markPlaying() {
+    const playAll = $("#play-all");
+    if (playAll) playAll.hidden = !round || round.played.length >= SONGS;
     const list = $("#track-list");
     if (!list || !round) return;
     const current = lastState && lastState.item && lastState.item.id;
@@ -363,13 +367,30 @@
       setTimeout(poll, 800);
     } catch (e) {
       if (e.reason === "NO_DEVICE") {
-        note('Spotify is asleep 😴<br>Open the Spotify app for a moment, then come back and pick your song.<br><a class="small-btn" href="spotify:">Open Spotify</a>');
-        setTimeout(renderTracks, 15000);
+        note('Spotify is asleep 😴<br>Tap the button, wait until Spotify is open, then come back here.<br><a class="small-btn" href="spotify:">Open Spotify</a>');
+        waitForDevice(body);
       } else {
         note(`Oops, the music didn't start (${e.message}). Try again!`);
         setTimeout(renderTracks, 4000);
       }
     }
+  }
+
+  // Keep looking for the phone's Spotify app, and start the song once it shows up.
+  let deviceWait = null;
+  function waitForDevice(body) {
+    clearTimeout(deviceWait);
+    const started = Date.now();
+    const tryAgain = async () => {
+      if (!round) return;
+      if (!document.hidden) {
+        const list = await remote.devices().catch(() => []);
+        if (list.length) { renderTracks(); playSong(body); return; }
+      }
+      if (Date.now() - started < 120000) deviceWait = setTimeout(tryAgain, 2000);
+      else renderTracks();
+    };
+    deviceWait = setTimeout(tryAgain, 2000);
   }
 
   async function poll() {
@@ -432,8 +453,18 @@
     const el = $("#grownup");
     if (!remote || !remote.configured) return;
     el.innerHTML = remote.connected()
-      ? 'Spotify connected ✓ <button class="link-btn" id="disconnect">Disconnect</button>'
+      ? 'Spotify connected ✓ <button class="link-btn" id="check">Check Spotify</button> <button class="link-btn" id="disconnect">Disconnect</button>'
       : '<button class="link-btn" id="connect">Grown-ups: connect Spotify</button>';
+    const check = $("#check");
+    if (check) check.addEventListener("click", async () => {
+      const out = document.createElement("pre");
+      out.className = "diagnose";
+      out.textContent = "Checking…";
+      el.appendChild(out);
+      check.disabled = true;
+      out.textContent = (await remote.diagnose(playlistId)).join("\n");
+      check.disabled = false;
+    });
     const connect = $("#connect");
     if (connect) connect.addEventListener("click", () => remote.login());
     const disconnect = $("#disconnect");

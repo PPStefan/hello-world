@@ -129,26 +129,58 @@ window.SpotifyRemote = (() => {
   }
 
   // Songs in a playlist, for the pick list. Returns [] if Spotify won't share them.
+  // Newer Spotify apps use /items with "item"; older ones /tracks with "track".
   async function playlistTracks(playlistId) {
-    const fields = "items(track(id,uri,name,artists(name),album(images))),next";
     for (const kind of ["items", "tracks"]) {
       try {
         const out = [];
-        let path = `/playlists/${playlistId}/${kind}?limit=100&fields=${encodeURIComponent(fields)}`;
+        let path = `/playlists/${playlistId}/${kind}?limit=50`;
         while (path && out.length < 300) {
           const page = await api("GET", path);
           (page.items || []).forEach((it) => {
-            const t = it.track || it.item;
+            const t = it.item || it.track;
             if (t && t.id && t.uri && t.uri.startsWith("spotify:track:")) out.push(t);
           });
           path = page.next ? page.next.replace(API, "") : null;
         }
-        return out;
+        if (out.length) return out;
       } catch (e) {
         if (e.status === 401) throw e;
       }
     }
     return [];
+  }
+
+  async function devices() {
+    const { devices: list = [] } = (await api("GET", "/me/player/devices")) || {};
+    return list;
+  }
+
+  // What Spotify tells us, for the grown-up "Check Spotify" button.
+  async function diagnose(playlistId) {
+    const lines = [];
+    const step = async (label, fn) => {
+      try { lines.push(`✅ ${label}: ${await fn()}`); } catch (e) { lines.push(`❌ ${label}: ${e.status || ""} ${e.message}`); }
+    };
+    await step("Account", async () => { const me = await api("GET", "/me"); return `${me.display_name || me.id} (${me.product || "?"})`; });
+    await step("Devices", async () => {
+      const list = await devices();
+      return list.length ? list.map((d) => `${d.name} [${d.type}${d.is_active ? ", active" : ""}${d.is_restricted ? ", restricted" : ""}]`).join("; ") : "none";
+    });
+    if (playlistId) {
+      await step("Playlist", async () => {
+        const p = await api("GET", `/playlists/${playlistId}`);
+        return `${p.name} by ${p.owner && (p.owner.display_name || p.owner.id)}`;
+      });
+      for (const kind of ["items", "tracks"]) {
+        await step(`Songs (${kind})`, async () => {
+          const page = await api("GET", `/playlists/${playlistId}/${kind}?limit=2`);
+          const first = (page.items || [])[0];
+          return `${page.total} songs, keys: ${first ? Object.keys(first).join(",") : "-"}`;
+        });
+      }
+    }
+    return lines;
   }
 
   // Start playback; if no device is active, wake up the phone's Spotify app.
@@ -157,10 +189,10 @@ window.SpotifyRemote = (() => {
       await api("PUT", "/me/player/play", body);
     } catch (e) {
       if (e.status !== 404 && e.reason !== "NO_ACTIVE_DEVICE") throw e;
-      const { devices = [] } = (await api("GET", "/me/player/devices")) || {};
-      const device = devices.find((d) => d.is_active)
-        || devices.find((d) => d.type === "Smartphone")
-        || devices[0];
+      const list = await devices();
+      const device = list.find((d) => d.is_active)
+        || list.find((d) => d.type === "Smartphone")
+        || list[0];
       if (!device) throw Object.assign(new Error("No Spotify device"), { reason: "NO_DEVICE" });
       await api("PUT", `/me/player/play?device_id=${encodeURIComponent(device.id)}`, body);
     }
@@ -174,6 +206,8 @@ window.SpotifyRemote = (() => {
     logout,
     handleRedirect,
     playlistTracks,
+    devices,
+    diagnose,
     play,
     resume: () => play(undefined),
     pause: () => api("PUT", "/me/player/pause"),
