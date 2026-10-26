@@ -36,6 +36,12 @@ One-time setup:
 The Spotify app must be installed on the phone; if it has been closed for a
 long time the website asks her to open it for a moment.
 
+The iPhone puts a paused Spotify app to sleep within about a minute, and the
+website can't wake it. Set `keepAwakeTrack` in `config.js` to a long silent
+Spotify track (search "silence" in Spotify, pick one of 10+ minutes, check it
+is really silent, then ••• → Share → Copy Song Link). It plays during the quiz
+instead of pausing, for at most 10 minutes, so the next song starts right away.
+
 ## Put it on the iPhone
 
 1. Publish the repo with GitHub Pages (Settings → Pages → deploy from branch, root folder).

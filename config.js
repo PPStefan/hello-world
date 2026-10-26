@@ -24,4 +24,9 @@ window.APP_CONFIG = {
   // runs out first sends her back to the quiz.
   songsPerQuiz: 2,
   minutesPerQuiz: 0,
+
+  // A long silent Spotify track (at least 10 minutes) that plays during the
+  // quiz, so the phone's Spotify app stays awake and the next song can start
+  // straight away. Leave "" to simply pause instead.
+  keepAwakeTrack: "",
 };

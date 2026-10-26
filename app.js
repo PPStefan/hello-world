@@ -224,6 +224,8 @@
   const SONGS = config.songsPerQuiz || 2;
   const MINUTES = config.minutesPerQuiz || 0;
   const POLL_MS = 4000;
+  const AWAKE_MS = 10 * 60000;
+  const SILENCE = (String(config.keepAwakeTrack || "").match(/track[/:]([A-Za-z0-9]{22})/) || [])[1];
   const playlistId = (String(config.playlist || "").match(/playlist[/:]([A-Za-z0-9]{22})/) || [])[1];
 
   let round = loadRound(); // { played: [track ids], deadline: ms or null } while music is allowed
@@ -233,6 +235,7 @@
   let endTimer = null;
   let polling = false;
   let wakeLock = null;
+  let awakeUntil = 0; // the silent track may play until then
 
   function loadRound() {
     try { return JSON.parse(localStorage.getItem(ROUND_KEY)); } catch { return null; }
@@ -350,7 +353,7 @@
   function renderNow(state) {
     const now = $("#now");
     const item = state && state.item;
-    if (!item) { now.hidden = true; return; }
+    if (!item || item.id === SILENCE) { now.hidden = true; return; }
     const img = (item.album && item.album.images || [])[0];
     $("#now-art").src = img ? img.url : "";
     $("#now-art").style.visibility = img ? "" : "hidden";
@@ -408,12 +411,13 @@
   function check(state) {
     const playing = Boolean(state && state.is_playing && state.item);
     if (!round) {
-      if (playing) remote.pause().catch(() => {}); // no music without the quiz
+      const resting = playing && state.item.id === SILENCE && Date.now() < awakeUntil;
+      if (playing && !resting) remote.pause().catch(() => {}); // no music without the quiz
       return;
     }
     if (round.deadline && Date.now() >= round.deadline) { endRound(); return; }
     renderNow(state);
-    if (playing && state.item.id && !round.played.includes(state.item.id)) {
+    if (playing && state.item.id && state.item.id !== SILENCE && !round.played.includes(state.item.id)) {
       if (round.played.length >= SONGS) { endRound(); return; }
       round.played.push(state.item.id);
       saveRound();
@@ -443,12 +447,21 @@
     round = null;
     saveRound();
     letSleep();
-    remote.pause().catch(() => {});
+    restQuietly();
     $("#now").hidden = true;
     $("#song-count").hidden = true;
     setStars(0);
     show("timesup");
     sounds.right();
+  }
+
+  // Between rounds, play the silent track instead of pausing: the iPhone puts a
+  // paused Spotify app to sleep within a minute, and then the website can't
+  // start the next song until someone opens Spotify again.
+  function restQuietly() {
+    if (!SILENCE) { remote.pause().catch(() => {}); return; }
+    awakeUntil = Date.now() + AWAKE_MS;
+    remote.play({ uris: [`spotify:track:${SILENCE}`] }).catch(() => remote.pause().catch(() => {}));
   }
 
   $("#now-toggle").addEventListener("click", () => {
