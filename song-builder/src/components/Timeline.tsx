@@ -10,7 +10,7 @@ import { TrackHeader } from './TrackHeader';
 import { Waveform } from './Waveform';
 
 const RULER_HEIGHT = 40;
-const LANE_HEIGHT = 84;
+const LANE_HEIGHT = 96;
 const MAX_PPS = 20000; // 1 ms = 20 px
 const MIN_VISIBLE_SEC = 10;
 
@@ -140,9 +140,10 @@ export function Timeline({ engine, project, audio, duration, dispatch }: Props) 
       {tracks.map((track, i) => {
         const a = audio[track.audioId];
         const color = TRACK_COLORS[i % TRACK_COLORS.length];
+        const audible = isAudible(track, tracks);
         return (
           <div className="tl-row" key={track.id} style={{ height: LANE_HEIGHT }}>
-            <TrackHeader track={track} color={color} audio={a} dispatch={dispatch} />
+            <TrackHeader track={track} color={color} audio={a} audible={audible} dispatch={dispatch} />
             <div className="tl-lane" onPointerDown={seekFromLane}>
               <Waveform
                 peaks={a?.status === 'ready' ? a.peaks : undefined}
@@ -150,7 +151,7 @@ export function Timeline({ engine, project, audio, duration, dispatch }: Props) 
                 view={view}
                 height={LANE_HEIGHT}
                 color={color}
-                dimmed={!isAudible(track, tracks)}
+                dimmed={!audible}
                 bpm={bpm}
                 beatsPerBar={beatsPerBar}
               />

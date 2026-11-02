@@ -38,7 +38,7 @@ them with **Choose files…** like real recordings.
 
 - [x] **Step 1 – Upload and synced playback**: song name and BPM, up to 8 tracks,
       waveforms on a shared timeline, play / pause / stop / seek, zoom
-- [ ] Step 2 – Mixing: volume, mute, solo
+- [x] **Step 2 – Mixing**: volume fader (dB), mute, solo
 - [ ] Step 3 – Timing alignment: drag, ±10 / ±1 ms, offset in ms
 - [ ] Step 4 – Click track with count-in
 - [ ] Step 5 – Export mix to WAV
@@ -58,6 +58,17 @@ them with **Choose files…** like real recordings.
    0:01.2 (the clap) and you can see the guitar is a little late.
 6. Rename a track by clicking its name. Remove it with ×.
 7. Drop your own WAV / MP3 / M4A files on the dashed box at the bottom.
+
+### How to test step 2
+
+1. Load the demo tracks and press **Play**.
+2. Press **M** (mute) on the drums: they go silent and grey. Press it again.
+3. Press **S** (solo) on the bass: you only hear bass, the other tracks turn
+   grey. Solo the vocals as well: you hear bass and vocals. **Alt-click** an
+   **S** to solo only that track. Turn all solos off to hear everything again.
+4. Drag a volume fader: the dB value changes while you listen. All the way
+   left is **off**. **Double-click** a fader to reset it to 0 dB.
+5. Mute beats solo: a track that is both muted and soloed stays silent.
 
 ## How it works
 

@@ -7,6 +7,7 @@ export type ProjectAction =
   | { type: 'setBpm'; bpm: number }
   | { type: 'addTrack'; track: Track }
   | { type: 'removeTrack'; id: string }
+  | { type: 'soloOnly'; id: string }
   | { type: 'updateTrack'; id: string; changes: Partial<Omit<Track, 'id'>> };
 
 function reducer(state: Project, action: ProjectAction): Project {
@@ -27,6 +28,8 @@ function apply(state: Project, action: ProjectAction): Project {
       return { ...state, tracks: [...state.tracks, action.track] };
     case 'removeTrack':
       return { ...state, tracks: state.tracks.filter((t) => t.id !== action.id) };
+    case 'soloOnly':
+      return { ...state, tracks: state.tracks.map((t) => ({ ...t, solo: t.id === action.id })) };
     case 'updateTrack':
       return {
         ...state,

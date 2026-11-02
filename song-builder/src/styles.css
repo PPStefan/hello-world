@@ -391,3 +391,58 @@ button:disabled {
   border-color: var(--accent);
   background: #fff3ee;
 }
+
+/* ---------- mixing ---------- */
+
+.track-mix {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-left: 6px;
+}
+
+.toggle {
+  width: 30px;
+  height: 26px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel);
+  font-weight: 700;
+  font-size: 0.8rem;
+  cursor: pointer;
+  color: var(--muted);
+}
+
+.toggle:hover {
+  border-color: #c9c3b8;
+}
+
+.toggle.mute.on {
+  background: #5f6368;
+  border-color: #5f6368;
+  color: #fff;
+}
+
+.toggle.solo.on {
+  background: #f3c614;
+  border-color: #e0b400;
+  color: #3a2f00;
+}
+
+.fader {
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.db {
+  width: 58px;
+  text-align: right;
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.track-head.silent .track-name {
+  color: var(--muted);
+}

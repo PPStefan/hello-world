@@ -27,6 +27,7 @@ function nameFromFile(fileName: string) {
 
 export default function App() {
   const [engine] = useState(() => new AudioEngine());
+  if (import.meta.env.DEV) Object.assign(window, { songBuilder: { engine } }); // for debugging in the console
   const [audioStore] = useState(() => new MemoryAudioStore());
   const [project, dispatch] = useProjectStore();
   const { audio, addFile } = useTrackAudio(engine, audioStore, project.tracks);
