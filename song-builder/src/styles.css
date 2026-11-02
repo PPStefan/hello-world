@@ -1,0 +1,393 @@
+:root {
+  --head-width: 300px;
+  --bg: #f4f2ee;
+  --panel: #ffffff;
+  --line: #e2ded6;
+  --text: #22201c;
+  --muted: #8a857b;
+  --accent: #e4572e;
+  --accent-dark: #c4431e;
+  --radius: 10px;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+.muted {
+  color: var(--muted);
+  font-size: 0.9em;
+}
+
+.error-text {
+  color: #b3261e;
+}
+
+/* ---------- layout ---------- */
+
+.app-header {
+  background: #22201c;
+  color: #fff;
+  padding: 12px 24px;
+}
+
+.brand {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.brand-sub {
+  font-weight: 400;
+  opacity: 0.7;
+  margin-left: 6px;
+}
+
+main {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px 24px 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ---------- song header ---------- */
+
+.song-header {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.field.grow {
+  flex: 1;
+}
+
+.field input {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: var(--text);
+}
+
+.song-name {
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.bpm {
+  width: 110px;
+  font-size: 1.4rem;
+}
+
+/* ---------- buttons ---------- */
+
+.btn,
+.transport-btn,
+.small-btn {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.btn {
+  padding: 8px 14px;
+}
+
+.btn:hover:not(:disabled),
+.transport-btn:hover:not(:disabled),
+.small-btn:hover:not(:disabled) {
+  border-color: #c9c3b8;
+  background: #faf9f6;
+}
+
+.btn.primary,
+.transport-btn.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.btn.primary:hover:not(:disabled),
+.transport-btn.primary:hover:not(:disabled) {
+  background: var(--accent-dark);
+  border-color: var(--accent-dark);
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.small-btn {
+  padding: 2px 9px;
+  font-size: 0.85rem;
+}
+
+.icon-btn {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  line-height: 1;
+  color: var(--muted);
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+.icon-btn:hover {
+  background: #0000000d;
+  color: var(--text);
+}
+
+/* ---------- transport ---------- */
+
+.transport {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+}
+
+.transport-btn {
+  padding: 9px 18px;
+  font-weight: 600;
+  min-width: 110px;
+}
+
+.clock {
+  display: flex;
+  flex-direction: column;
+  margin-left: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.clock-time {
+  font-size: 1.5rem;
+  font-weight: 600;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+}
+
+.clock-bar {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.song-length {
+  margin-left: auto;
+}
+
+/* ---------- messages ---------- */
+
+.messages {
+  position: relative;
+  background: #fff4e5;
+  border: 1px solid #f3c98b;
+  border-radius: var(--radius);
+  padding: 10px 40px 10px 14px;
+  font-size: 0.9rem;
+}
+
+.messages .icon-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+}
+
+/* ---------- timeline ---------- */
+
+.timeline {
+  position: relative;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  user-select: none;
+}
+
+.tl-row {
+  display: flex;
+  border-bottom: 1px solid var(--line);
+}
+
+.tl-row:last-of-type {
+  border-bottom: none;
+}
+
+.tl-head {
+  flex: 0 0 var(--head-width);
+  width: var(--head-width);
+  border-right: 1px solid var(--line);
+  background: #fbfaf8;
+}
+
+.tl-lane {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.ruler-head {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 12px;
+}
+
+.ruler-head .muted {
+  margin-right: 4px;
+}
+
+.ruler {
+  display: block;
+  cursor: text;
+}
+
+.waveform {
+  display: block;
+}
+
+.empty-lane {
+  padding: 28px 16px;
+  color: var(--muted);
+}
+
+.track-head {
+  border-left: 5px solid;
+  padding: 8px 10px 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.track-title {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.track-name {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: 6px;
+  padding: 3px 6px;
+  font-weight: 600;
+}
+
+.track-name:hover,
+.track-name:focus {
+  border-color: var(--line);
+  background: #fff;
+  outline: none;
+}
+
+.track-file {
+  font-size: 0.75rem;
+  color: var(--muted);
+  padding-left: 7px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.scrollbar {
+  position: relative;
+  height: 14px;
+  background: #f0ede7;
+}
+
+.scrollbar-thumb {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  min-width: 24px;
+  background: #c9c3b8;
+  border-radius: 4px;
+  cursor: grab;
+}
+
+.scrollbar-thumb:active {
+  cursor: grabbing;
+  background: #aaa397;
+}
+
+.playhead-layer {
+  position: absolute;
+  top: 0;
+  bottom: 15px;
+  left: calc(var(--head-width) + 1px);
+  right: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.playhead {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -1px;
+  width: 2px;
+  background: var(--accent);
+  will-change: transform;
+}
+
+.playhead::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -5px;
+  border: 6px solid transparent;
+  border-top-color: var(--accent);
+}
+
+/* ---------- add tracks ---------- */
+
+.add-tracks {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  border: 2px dashed var(--line);
+  border-radius: var(--radius);
+  padding: 16px;
+  background: #fbfaf8;
+}
+
+.add-tracks p {
+  margin: 0;
+}
+
+.add-tracks.drag-over {
+  border-color: var(--accent);
+  background: #fff3ee;
+}
